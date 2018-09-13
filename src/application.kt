@@ -1,9 +1,6 @@
 package com.orange.ccmd.sandbox
 
-import io.ktor.application.Application
-import io.ktor.application.application
-import io.ktor.application.call
-import io.ktor.application.install
+import io.ktor.application.*
 import io.ktor.client.HttpClient
 import io.ktor.client.features.json.GsonSerializer
 import io.ktor.client.features.json.JsonFeature
@@ -12,14 +9,17 @@ import io.ktor.client.request.url
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.jackson.jackson
+import io.ktor.pipeline.PipelineContext
 import io.ktor.request.path
 import io.ktor.response.respond
 import io.ktor.routing.get
 import io.ktor.routing.routing
+import kotlinx.coroutines.experimental.async
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 
-val LOGGER = LoggerFactory.getLogger("MyLogger")
+val LOGGER: Logger = LoggerFactory.getLogger("MyLogger")
 const val ROOT_URL = "https://www.strava.com/api/v3/"
 const val PER_PAGE = 200
 
@@ -36,7 +36,7 @@ fun Application.module() {
         }
     }
 
-    val client = HttpClient() {
+    val client = HttpClient {
         install(JsonFeature) {
             serializer = GsonSerializer()
         }
@@ -48,29 +48,49 @@ fun Application.module() {
             LOGGER.info("Getting all activities")
 
             val activities = client.get<List<Activity>> {
-                url("$ROOT_URL/activities?per_page=$PER_PAGE&access_token=${tokenFromConf(application)}")
+                url("$ROOT_URL/activities?per_page=$PER_PAGE&access_token=${tokenFromConf()}")
             }
 
-            LOGGER.info("${activities.size} activites found")
+            LOGGER.info("${activities.size} activites found, displaying first ten")
+
+            val firstTenActivities = activities.subList(0 , 10)
+            call.respond(firstTenActivities)
         }
 
         get("/activities/{id}") {
 
             val id = call.parameters["id"]
-            LOGGER.info("Getting activity with id=$id")
+            LOGGER.info("Getting activity with id = $id")
 
-            val activity = client.get<Activity> {
-                url("$ROOT_URL/activities/$id?access_token=${tokenFromConf(application)}")
-            }
-
-            LOGGER.info(activity.toString())
+            val activity = getActivity(client, id)
 
             call.respond(activity)
+        }
+
+        get("/activities/all/{ids}") {
+
+            val ids = call.parameters["ids"]
+            LOGGER.info("Getting activities with ids = $ids")
+
+            val activityIds = ids.orEmpty().split(",")
+            val tasks = activityIds.map { activityId -> async { getActivity(client, activityId) }}
+            val allActivities = tasks.forEach { task -> task.await() }
+
+            call.respond(allActivities)
         }
     }
 }
 
-fun tokenFromConf(application: Application): String {
+suspend fun PipelineContext<Unit, ApplicationCall>.getActivity(client: HttpClient, id: String?): Activity {
+    val activity = client.get<Activity> {
+        url("$ROOT_URL/activities/$id?access_token=${tokenFromConf()}")
+    }
+
+    LOGGER.info(activity.toString())
+    return activity
+}
+
+fun PipelineContext<Unit, ApplicationCall>.tokenFromConf(): String {
     return application.environment.config.property("apiToken").getString()
 
 }
