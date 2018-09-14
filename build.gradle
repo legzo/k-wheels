@@ -1,8 +1,8 @@
 buildscript {
-    ext.kotlin_version = '1.2.60'
+    ext.kotlin_version = '1.2.70'
     ext.ktor_version = '0.9.3'
     ext.logback_version = '1.2.1'
-    ext.kotlinx_coroutines_version = '0.23.4'
+    ext.kotlinx_coroutines_version = '0.24.0'
     
     repositories {
         jcenter()
@@ -29,7 +29,7 @@ sourceSets {
 
 compileKotlin {
     kotlinOptions {
-        jvmTarget = "1.6"
+        jvmTarget = "1.8"
     }
 }
 
