@@ -18,8 +18,9 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 
-val LOGGER: Logger = LoggerFactory.getLogger("MyLogger")
-const val ROOT_URL = "https://www.strava.com/api/v3/"
+val LOGGER: Logger = LoggerFactory.getLogger("App")
+
+const val STRAVA_ROOT_URL = "https://www.strava.com/api/v3/"
 const val PER_PAGE = 200
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.DevelopmentEngine.main(args)
