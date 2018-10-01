@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.2.51'
+    ext.kotlin_version = '1.2.60'
     ext.ktor_version = '0.9.3'
     ext.logback_version = '1.2.1'
     ext.kotlinx_coroutines_version = '0.23.4'
@@ -27,6 +27,12 @@ sourceSets {
     test.resources.srcDirs = ['testresources']
 }
 
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.6"
+    }
+}
+
 repositories {
     jcenter()
     maven { url 'https://kotlin.bintray.com/ktor' }
@@ -45,6 +51,9 @@ dependencies {
     compile "io.ktor:ktor-client-core:$ktor_version"
     compile "io.ktor:ktor-client-json:$ktor_version"
     compile "io.ktor:ktor-client-apache:$ktor_version"
+
+    compile 'org.dizitart:potassium-nitrite:3.1.0'
+
     testCompile "io.ktor:ktor-server-tests:$ktor_version"
     testCompile "io.ktor:ktor-metrics:$ktor_version"
     testCompile "io.ktor:ktor-server-core:$ktor_version"
