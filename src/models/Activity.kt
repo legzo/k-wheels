@@ -1,4 +1,4 @@
-package com.orange.ccmd.sandbox
+package com.orange.ccmd.sandbox.models
 
 import com.google.gson.annotations.SerializedName
 

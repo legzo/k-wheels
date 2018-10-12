@@ -1,8 +1,8 @@
 package com.orange.ccmd.sandbox.routes
 
-import com.orange.ccmd.sandbox.Activity
 import com.orange.ccmd.sandbox.StravaEndpoint
 import com.orange.ccmd.sandbox.client
+import com.orange.ccmd.sandbox.models.Activity
 import io.ktor.application.call
 import io.ktor.client.request.get
 import io.ktor.response.respond
