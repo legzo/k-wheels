@@ -1,13 +1,10 @@
 package com.orange.ccmd.sandbox.routes
 
 import com.orange.ccmd.sandbox.Activity
-import com.orange.ccmd.sandbox.PER_PAGE
-import com.orange.ccmd.sandbox.STRAVA_ROOT_URL
+import com.orange.ccmd.sandbox.StravaEndpoint
 import com.orange.ccmd.sandbox.client
-import com.orange.ccmd.sandbox.tokenFromConf
 import io.ktor.application.call
 import io.ktor.client.request.get
-import io.ktor.client.request.url
 import io.ktor.http.HttpStatusCode.Companion.NotFound
 import io.ktor.response.respond
 import io.ktor.routing.Route
@@ -19,7 +16,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
 
-fun Route.database() {
+fun Route.database(endpoint: StravaEndpoint) {
 
     val logger: Logger = LoggerFactory.getLogger("DatabaseAPI")
 
@@ -35,9 +32,7 @@ fun Route.database() {
     get("/db/syncActivities") {
         logger.info("Getting all activities")
 
-        val activities = client.get<List<Activity>> {
-            url("$STRAVA_ROOT_URL/activities?per_page=$PER_PAGE&access_token=${tokenFromConf()}")
-        }
+        val activities = client.get<List<Activity>>(endpoint.forActivities())
 
         logger.info("${activities.size} activites found, returning first ten")
 
@@ -45,7 +40,6 @@ fun Route.database() {
 
         call.respond(activities.subList(0, 10))
     }
-
 
     get("/db/activities") {
         logger.info("Getting activities from db")
@@ -71,5 +65,3 @@ fun Route.database() {
         }
     }
 }
-
-

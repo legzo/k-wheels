@@ -1,32 +1,26 @@
 package com.orange.ccmd.sandbox.routes
 
 import com.orange.ccmd.sandbox.Activity
-import com.orange.ccmd.sandbox.PER_PAGE
-import com.orange.ccmd.sandbox.STRAVA_ROOT_URL
+import com.orange.ccmd.sandbox.StravaEndpoint
 import com.orange.ccmd.sandbox.client
-import com.orange.ccmd.sandbox.tokenFromConf
-import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.client.request.get
-import io.ktor.client.request.url
-import io.ktor.pipeline.PipelineContext
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
 import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.awaitAll
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-fun Route.strava() {
+fun Route.strava(endpoint: StravaEndpoint) {
 
     val logger: Logger = LoggerFactory.getLogger("StravaAPI")
 
     get("/activities") {
         logger.info("Getting all activities")
 
-        val activities = client.get<List<Activity>> {
-            url("$STRAVA_ROOT_URL/activities?per_page=$PER_PAGE&access_token=${tokenFromConf()}")
-        }
+        val activities = client.get<List<Activity>>(endpoint.forActivities())
 
         logger.info("${activities.size} activites found, returning first ten")
 
@@ -35,29 +29,22 @@ fun Route.strava() {
 
     get("/activities/{id}") {
 
-        val id = call.parameters["id"]
+        val id = call.parameters["id"].orEmpty()
         logger.info("Getting activity with id = $id")
 
-        val activity = getActivity(id)
+        val activity = client.get<Activity>(endpoint.forActivity(id))
 
         call.respond(activity)
     }
 
     get("/activities/all/{ids}") {
 
-        val ids = call.parameters["ids"]
+        val ids = call.request.queryParameters["ids"].orEmpty()
         logger.info("Getting activities with ids = $ids")
 
-        val activityIds = ids.orEmpty().split(",")
-        val tasks = activityIds.map { id -> async { getActivity(id) } }
-        val allActivities = tasks.forEach { task -> task.await() }
+        val activityIds = ids.split(",")
+        val tasks = activityIds.map { id -> async { client.get<Activity>(endpoint.forActivity(id)) } }
 
-        call.respond(allActivities)
-    }
-}
-
-suspend fun PipelineContext<Unit, ApplicationCall>.getActivity(id: String?): Activity {
-    return client.get {
-        url("$STRAVA_ROOT_URL/activities/$id?access_token=${tokenFromConf()}")
+        call.respond(tasks.awaitAll())
     }
 }
