@@ -10,6 +10,7 @@ import io.ktor.routing.get
 import org.dizitart.kno2.filters.eq
 import org.dizitart.kno2.getRepository
 import org.dizitart.kno2.nitrite
+import org.dizitart.no2.objects.filters.ObjectFilters
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -34,13 +35,14 @@ fun Route.database(connector: StravaConnector) {
     get("/db/syncActivities") {
         logger.info("Getting all activities")
 
-        val activities = connector.getActivities()
+        val activities = connector.getAllActivities()
 
-        logger.info("${activities.size} activites found, returning first ten")
+        logger.info("${activities.size} activites found")
 
+        activityRepository.remove(ObjectFilters.ALL)
         activityRepository.insert(activities.toTypedArray())
 
-        call.respond(activities.subList(0, 10))
+        call.respond(mapOf("activitiesSaved" to activities.size))
     }
 
     get("/db/activities") {

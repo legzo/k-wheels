@@ -12,12 +12,12 @@ import org.slf4j.LoggerFactory
 
 fun Route.strava(connector: StravaConnector) {
 
-    val logger: Logger = LoggerFactory.getLogger("StravaAPI")
+    val logger: Logger = LoggerFactory.getLogger("StravaRoute")
 
     get("/activities") {
         logger.info("Getting all activities")
 
-        val activities = connector.getActivities()
+        val activities = connector.getAllActivities()
 
         logger.info("${activities.size} activites found, returning first ten")
 

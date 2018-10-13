@@ -18,7 +18,7 @@ fun Application.module() {
 
     val stravaConnector = StravaConnector(
         StravaEndpoint(
-            rootUrl = "https://www.strava.com/api/v3/",
+            rootUrl = "https://www.strava.com/api/v3",
             apiToken = environment.config.property("apiToken").getString()
         )
     )
