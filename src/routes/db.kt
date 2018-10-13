@@ -1,10 +1,8 @@
 package com.orange.ccmd.sandbox.routes
 
-import com.orange.ccmd.sandbox.StravaEndpoint
-import com.orange.ccmd.sandbox.client
 import com.orange.ccmd.sandbox.models.Activity
+import com.orange.ccmd.sandbox.strava.StravaConnector
 import io.ktor.application.call
-import io.ktor.client.request.get
 import io.ktor.http.HttpStatusCode.Companion.NotFound
 import io.ktor.response.respond
 import io.ktor.routing.Route
@@ -16,27 +14,31 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
 
-fun Route.database(endpoint: StravaEndpoint) {
+fun Route.database(connector: StravaConnector) {
 
     val logger: Logger = LoggerFactory.getLogger("DatabaseAPI")
 
-    val repository by lazy {
+    val db by lazy {
         nitrite {
             file = File("resources/strava.db")
             autoCommitBufferSize = 2048
             compress = true
             autoCompact = false
-        }.getRepository<Activity>()
+        }
+    }
+
+    val activityRepository by lazy {
+        db.getRepository<Activity>()
     }
 
     get("/db/syncActivities") {
         logger.info("Getting all activities")
 
-        val activities = client.get<List<Activity>>(endpoint.forActivities())
+        val activities = connector.getActivities()
 
         logger.info("${activities.size} activites found, returning first ten")
 
-        repository.insert(activities.toTypedArray())
+        activityRepository.insert(activities.toTypedArray())
 
         call.respond(activities.subList(0, 10))
     }
@@ -44,7 +46,7 @@ fun Route.database(endpoint: StravaEndpoint) {
     get("/db/activities") {
         logger.info("Getting activities from db")
 
-        val activities = repository.find().toList()
+        val activities = activityRepository.find().toList()
 
         logger.info("${activities.size} activites found, returning first ten")
 
@@ -55,7 +57,7 @@ fun Route.database(endpoint: StravaEndpoint) {
         val id = call.parameters["id"]
         logger.info("Getting activity with id = $id from db")
 
-        val activity = repository.find(Activity::id eq id).firstOrNull()
+        val activity = activityRepository.find(Activity::id eq id).firstOrNull()
 
         if (activity != null) {
             logger.info("Activity found, returning it")

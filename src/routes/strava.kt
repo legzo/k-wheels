@@ -1,10 +1,7 @@
 package com.orange.ccmd.sandbox.routes
 
-import com.orange.ccmd.sandbox.StravaEndpoint
-import com.orange.ccmd.sandbox.client
-import com.orange.ccmd.sandbox.models.Activity
+import com.orange.ccmd.sandbox.strava.StravaConnector
 import io.ktor.application.call
-import io.ktor.client.request.get
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
@@ -13,14 +10,14 @@ import kotlinx.coroutines.experimental.awaitAll
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-fun Route.strava(endpoint: StravaEndpoint) {
+fun Route.strava(connector: StravaConnector) {
 
     val logger: Logger = LoggerFactory.getLogger("StravaAPI")
 
     get("/activities") {
         logger.info("Getting all activities")
 
-        val activities = client.get<List<Activity>>(endpoint.forActivities())
+        val activities = connector.getActivities()
 
         logger.info("${activities.size} activites found, returning first ten")
 
@@ -32,7 +29,7 @@ fun Route.strava(endpoint: StravaEndpoint) {
         val id = call.parameters["id"].orEmpty()
         logger.info("Getting activity with id = $id")
 
-        val activity = client.get<Activity>(endpoint.forActivity(id))
+        val activity = connector.getActivity(id)
 
         call.respond(activity)
     }
@@ -43,7 +40,7 @@ fun Route.strava(endpoint: StravaEndpoint) {
         logger.info("Getting activities with ids = $ids")
 
         val activityIds = ids.split(",")
-        val tasks = activityIds.map { id -> async { client.get<Activity>(endpoint.forActivity(id)) } }
+        val tasks = activityIds.map { id -> async { connector.getActivity(id) } }
 
         call.respond(tasks.awaitAll())
     }
