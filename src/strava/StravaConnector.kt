@@ -1,6 +1,7 @@
 package com.orange.ccmd.sandbox.strava
 
 import com.orange.ccmd.sandbox.models.Activity
+import com.orange.ccmd.sandbox.models.ActivityDetails
 import io.ktor.client.HttpClient
 import io.ktor.client.features.json.GsonSerializer
 import io.ktor.client.features.json.JsonFeature
@@ -32,7 +33,7 @@ class StravaConnector(private val endpoint: StravaEndpoint) {
         return client.get(url)
     }
 
-    suspend fun getActivity(id: String): Activity {
+    suspend fun getActivity(id: String): ActivityDetails {
         val url = endpoint.forActivity(id)
         logger.info("Calling $url")
         return client.get(url)
