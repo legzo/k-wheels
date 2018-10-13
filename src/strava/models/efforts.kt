@@ -1,4 +1,4 @@
-package models
+package com.orange.ccmd.sandbox.strava.models
 
 import com.google.gson.annotations.SerializedName
 

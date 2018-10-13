@@ -1,7 +1,7 @@
 package com.orange.ccmd.sandbox.strava
 
-import com.orange.ccmd.sandbox.models.Activity
-import com.orange.ccmd.sandbox.models.ActivityDetails
+import com.orange.ccmd.sandbox.strava.models.Activity
+import com.orange.ccmd.sandbox.strava.models.ActivityDetails
 import io.ktor.client.HttpClient
 import io.ktor.client.features.json.GsonSerializer
 import io.ktor.client.features.json.JsonFeature

@@ -1,7 +1,6 @@
-package com.orange.ccmd.sandbox.models
+package com.orange.ccmd.sandbox.strava.models
 
 import com.google.gson.annotations.SerializedName
-import models.SegmentEffort
 
 data class Activity(
     val id: String,

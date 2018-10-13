@@ -1,7 +1,7 @@
 package com.orange.ccmd.sandbox.routes
 
-import com.orange.ccmd.sandbox.models.Activity
 import com.orange.ccmd.sandbox.strava.StravaConnector
+import com.orange.ccmd.sandbox.strava.models.Activity
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode.Companion.NotFound
 import io.ktor.response.respond
