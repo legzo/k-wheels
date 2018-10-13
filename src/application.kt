@@ -1,7 +1,8 @@
 package com.orange.ccmd.sandbox
 
-import com.orange.ccmd.sandbox.routes.database
-import com.orange.ccmd.sandbox.routes.strava
+import com.orange.ccmd.sandbox.database.DatabaseConnector
+import com.orange.ccmd.sandbox.routes.dbRoutes
+import com.orange.ccmd.sandbox.routes.stravaRoutes
 import com.orange.ccmd.sandbox.strava.StravaConnector
 import com.orange.ccmd.sandbox.strava.StravaEndpoint
 import io.ktor.application.Application
@@ -23,6 +24,8 @@ fun Application.module() {
         )
     )
 
+    val dbConnector = DatabaseConnector("resources/strava.db")
+
     install(CallLogging) {
         level = Level.INFO
     }
@@ -32,7 +35,7 @@ fun Application.module() {
     }
 
     routing {
-        strava(stravaConnector)
-        database(stravaConnector)
+        stravaRoutes(stravaConnector)
+        dbRoutes(stravaConnector, dbConnector)
     }
 }

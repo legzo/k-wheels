@@ -27,14 +27,14 @@ class StravaConnector(private val endpoint: StravaEndpoint) {
         return allActivities
     }
 
-    private suspend fun getActivitiesPage(page: Number = 0): List<Activity> {
-        val url = endpoint.forActivities(perPage = 100, page = page)
+    suspend fun getActivity(id: String): ActivityDetails {
+        val url = endpoint.forActivity(id)
         logger.info("Calling $url")
         return client.get(url)
     }
 
-    suspend fun getActivity(id: String): ActivityDetails {
-        val url = endpoint.forActivity(id)
+    private suspend fun getActivitiesPage(page: Number = 0): List<Activity> {
+        val url = endpoint.forActivities(perPage = 100, page = page)
         logger.info("Calling $url")
         return client.get(url)
     }
