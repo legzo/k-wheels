@@ -20,25 +20,24 @@ class DatabaseConnector(private val dbFile: String) {
         }
     }
 
-    private val segmentDataRepository = db.getRepository<SegmentData>()
-
-    private val activityRepository = db.getRepository<Activity>()
+    private val segmentDataRepo = db.getRepository<SegmentData>()
+    private val activityRepo = db.getRepository<Activity>()
 
     fun updateActivities(activities: List<Activity>) {
-        activityRepository.remove(ObjectFilters.ALL)
-        activityRepository.insert(activities.toTypedArray())
+        activityRepo.remove(ObjectFilters.ALL)
+        activityRepo.insert(activities.toTypedArray())
     }
 
-    fun getAllActivities(): List<Activity> = activityRepository.find().toList()
+    fun getAllActivities(): List<Activity> = activityRepo.find().toList()
 
-    fun getActivity(id: String) = activityRepository.find(Activity::id eq id).firstOrNull()
+    fun getActivity(id: String) = activityRepo.find(Activity::id eq id).firstOrNull()
 
-    fun getSegmentData(): List<SegmentData> = segmentDataRepository.find().toList()
+    fun getSegmentData(): List<SegmentData> = segmentDataRepo.find().toList()
 
-    fun getSegmentData(id: String) = segmentDataRepository.find(SegmentData::id eq id).firstOrNull()
+    fun getSegmentData(id: String) = segmentDataRepo.find(SegmentData::id eq id).firstOrNull()
 
     fun clearSegmentData() {
-        segmentDataRepository.remove(ObjectFilters.ALL)
+        segmentDataRepo.remove(ObjectFilters.ALL)
     }
 
     fun saveEfforts(activity: ActivityDetails) {
@@ -54,10 +53,10 @@ class DatabaseConnector(private val dbFile: String) {
     }
 
     private fun createSegmentData(id: String, name: String, activityId: String, elapsedTime: Number) {
-        segmentDataRepository.insert(SegmentData(id, name, mutableMapOf(activityId to elapsedTime)))
+        segmentDataRepo.insert(SegmentData(id, name, mutableMapOf(activityId to elapsedTime)))
     }
 
     private fun updateSegmentData(segmentData: SegmentData) {
-        segmentDataRepository.update(SegmentData::id eq segmentData.id, segmentData)
+        segmentDataRepo.update(SegmentData::id eq segmentData.id, segmentData)
     }
 }
