@@ -60,6 +60,8 @@ dependencies {
     compile "io.ktor:ktor-client-gson:$ktor_version"
     compile "io.ktor:ktor-client-apache:$ktor_version"
 
+    compile 'org.apache.commons:commons-math3:3.6.1'
+
     compile 'org.dizitart:potassium-nitrite:3.1.0'
 
     testCompile "io.ktor:ktor-server-tests:$ktor_version"

@@ -1,6 +1,7 @@
 package com.orange.ccmd.sandbox
 
 import com.orange.ccmd.sandbox.database.DatabaseConnector
+import com.orange.ccmd.sandbox.routes.analysis
 import com.orange.ccmd.sandbox.routes.dbRoutes
 import com.orange.ccmd.sandbox.routes.stravaRoutes
 import com.orange.ccmd.sandbox.strava.StravaConnector
@@ -37,5 +38,6 @@ fun Application.module() {
     routing {
         stravaRoutes(stravaConnector)
         dbRoutes(stravaConnector, dbConnector)
+        analysis(stravaConnector, dbConnector)
     }
 }
