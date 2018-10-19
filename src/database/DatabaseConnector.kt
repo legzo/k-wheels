@@ -1,5 +1,7 @@
 package com.orange.ccmd.sandbox.database
 
+import com.orange.ccmd.sandbox.models.ActivityStats
+import com.orange.ccmd.sandbox.models.EffortStats
 import com.orange.ccmd.sandbox.models.SegmentData
 import com.orange.ccmd.sandbox.strava.models.Activity
 import com.orange.ccmd.sandbox.strava.models.ActivityDetails
@@ -23,8 +25,7 @@ class DatabaseConnector(private val dbFile: String) {
     private val segmentDataRepo = db.getRepository<SegmentData>()
     private val activityRepo = db.getRepository<Activity>()
 
-    fun updateActivities(activities: List<Activity>) {
-        activityRepo.remove(ObjectFilters.ALL)
+    fun saveActivities(activities: List<Activity>) {
         activityRepo.insert(activities.toTypedArray())
     }
 
@@ -40,6 +41,10 @@ class DatabaseConnector(private val dbFile: String) {
         segmentDataRepo.remove(ObjectFilters.ALL)
     }
 
+    fun clearActivities() {
+        activityRepo.remove(ObjectFilters.ALL)
+    }
+
     fun saveEfforts(activity: ActivityDetails) {
         activity.segmentEfforts.forEach { effort ->
             val segmentData = getSegmentData(effort.segment.id)
@@ -52,11 +57,30 @@ class DatabaseConnector(private val dbFile: String) {
         }
     }
 
-    private fun createSegmentData(id: String, name: String, activityId: String, elapsedTime: Number) {
+    private fun createSegmentData(id: String, name: String, activityId: String, elapsedTime: Float) {
         segmentDataRepo.insert(SegmentData(id, name, mutableMapOf(activityId to elapsedTime)))
     }
 
     private fun updateSegmentData(segmentData: SegmentData) {
         segmentDataRepo.update(SegmentData::id eq segmentData.id, segmentData)
+    }
+
+    fun getActivityStats(activity: ActivityDetails): ActivityStats {
+        val stats = activity.segmentEfforts.map { effort ->
+            val segmentData = getSegmentData(effort.segment.id)
+            if (segmentData != null) {
+                EffortStats(effort.segment.id, effort.segment.name, segmentData.roundedPercentile(effort.elapsedTime))
+            } else EffortStats(effort.segment.id, effort.segment.name, -1)
+        }
+
+        return ActivityStats(activity.id, activity.name, stats)
+    }
+
+    fun getActivitiesStats(activityDetails: List<ActivityDetails>): List<ActivityStats> {
+        return activityDetails.map { getActivityStats(it) }
+    }
+
+    fun deleteActivity(id: String): Boolean {
+        return activityRepo.remove(Activity::id eq id).affectedCount > 0
     }
 }

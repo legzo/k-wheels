@@ -1,8 +1,6 @@
 package com.orange.ccmd.sandbox.routes
 
 import com.orange.ccmd.sandbox.database.DatabaseConnector
-import com.orange.ccmd.sandbox.models.ActivityStats
-import com.orange.ccmd.sandbox.models.EffortStats
 import com.orange.ccmd.sandbox.strava.StravaConnector
 import io.ktor.application.call
 import io.ktor.response.respond
@@ -23,14 +21,8 @@ fun Route.analysis(
         logger.info("Analysing activity with id = $id")
 
         val activity = api.getActivity(id)
+        val activityStats = database.getActivityStats(activity)
 
-        val stats = activity.segmentEfforts.map { effort ->
-            val segmentData = database.getSegmentData(effort.segment.id)
-            if (segmentData != null) {
-                EffortStats(effort.segment.id, effort.segment.name, segmentData.roundedPercentile(effort.elapsedTime))
-            } else EffortStats(effort.segment.id, effort.segment.name, -1)
-        }
-
-        call.respond(ActivityStats(activity.id, activity.name, stats))
+        call.respond(activityStats)
     }
 }

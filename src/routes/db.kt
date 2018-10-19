@@ -3,10 +3,14 @@ package com.orange.ccmd.sandbox.routes
 import com.orange.ccmd.sandbox.database.DatabaseConnector
 import com.orange.ccmd.sandbox.strava.StravaConnector
 import com.orange.ccmd.sandbox.strava.models.Activity
+import com.orange.ccmd.sandbox.strava.models.ActivityDetails
+import com.orange.ccmd.sandbox.strava.models.SynchronizationInfos
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode.Companion.NotFound
+import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.response.respond
 import io.ktor.routing.Route
+import io.ktor.routing.delete
 import io.ktor.routing.get
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.awaitAll
@@ -21,15 +25,20 @@ fun Route.dbRoutes(
     val logger: Logger = LoggerFactory.getLogger("DatabaseAPI")
 
     get("/db/syncActivities") {
-        logger.info("Getting all activities")
-        val activities = api.getAllActivities()
+        logger.info("Syncing activities from db")
+        val apiActivities = api.getAllActivities()
+        val dbActivities = database.getAllActivities()
 
-        logger.info("${activities.size} activites found")
-        database.updateActivities(activities)
+        val activitiesToSync = apiActivities.minus(dbActivities)
 
-        saveEffortsForActivities(activities.map(Activity::id), api, database)
+        val updated = if (!activitiesToSync.isEmpty()) {
+            database.saveActivities(activitiesToSync)
+            val activityDetails = saveEffortsForActivities(activitiesToSync.map(Activity::id), api, database)
 
-        call.respond(mapOf("activitiesSaved" to activities.size))
+            database.getActivitiesStats(activityDetails)
+        } else emptyList()
+
+        call.respond(SynchronizationInfos(apiActivities.size, dbActivities.size, updated))
     }
 
     get("/db/activities") {
@@ -49,6 +58,12 @@ fun Route.dbRoutes(
         } else call.respond(NotFound)
     }
 
+    delete("/db/activities/{id}") {
+        val id = call.parameters["id"].orEmpty()
+        logger.info("Deleting activity with id = $id from db")
+        if (database.deleteActivity(id)) call.respond(OK) else call.respond(NotFound)
+    }
+
     get("/db/inject/{id}") {
         val id = call.parameters["id"].orEmpty()
         val activity = api.getActivity(id)
@@ -59,9 +74,7 @@ fun Route.dbRoutes(
     get("/db/segments/{id}") {
         val id = call.parameters["id"].orEmpty()
         val segmentData = database.getSegmentData(id)
-        if (segmentData != null) {
-            call.respond(segmentData)
-        } else call.respond(NotFound)
+        if (segmentData != null) call.respond(segmentData) else call.respond(NotFound)
     }
 
     get("/db/segments") {
@@ -78,9 +91,13 @@ private suspend fun saveEffortsForActivities(
     ids: List<String>,
     api: StravaConnector,
     database: DatabaseConnector
-) {
-    ids.chunked(20).map { chunkOfIds ->
+): List<ActivityDetails> {
+    val activityDetailsChunked = ids.chunked(20).map { chunkOfIds ->
         chunkOfIds.map { id -> async { api.getActivity(id) } }
-            .awaitAll().forEach(database::saveEfforts)
+            .awaitAll()
     }
+
+    val activityDetails = activityDetailsChunked.flatten()
+    activityDetails.forEach(database::saveEfforts)
+    return activityDetails
 }

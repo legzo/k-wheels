@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory
 class StravaConnector(private val endpoint: StravaEndpoint) {
 
     private val logger: Logger = LoggerFactory.getLogger("StravaConnector")
+    private val perPage = 200
     private val maxPage = 20
 
     suspend fun getAllActivities(): List<Activity> {
@@ -20,8 +21,8 @@ class StravaConnector(private val endpoint: StravaEndpoint) {
 
         for (pageIndex in 1..maxPage) {
             val activities = getActivitiesPage(pageIndex)
-            if (activities.isEmpty()) break
             allActivities.addAll(activities)
+            if (activities.size < perPage) break
         }
 
         return allActivities
@@ -34,7 +35,7 @@ class StravaConnector(private val endpoint: StravaEndpoint) {
     }
 
     private suspend fun getActivitiesPage(page: Number = 0): List<Activity> {
-        val url = endpoint.forActivities(perPage = 100, page = page)
+        val url = endpoint.forActivities(perPage, page)
         logger.info("Calling $url")
         return client.get(url)
     }
