@@ -1,6 +1,4 @@
-package com.orange.ccmd.sandbox.strava.models
-
-import com.orange.ccmd.sandbox.models.ActivityStats
+package com.orange.ccmd.sandbox.models
 
 data class SynchronizationInfos(
     val apiActivitiesCount: Int,

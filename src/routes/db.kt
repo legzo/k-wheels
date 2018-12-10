@@ -1,10 +1,10 @@
 package com.orange.ccmd.sandbox.routes
 
 import com.orange.ccmd.sandbox.database.DatabaseConnector
+import com.orange.ccmd.sandbox.models.SynchronizationInfos
 import com.orange.ccmd.sandbox.strava.StravaConnector
 import com.orange.ccmd.sandbox.strava.models.Activity
 import com.orange.ccmd.sandbox.strava.models.ActivityDetails
-import com.orange.ccmd.sandbox.strava.models.SynchronizationInfos
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode.Companion.NotFound
 import io.ktor.http.HttpStatusCode.Companion.OK
@@ -12,8 +12,9 @@ import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.delete
 import io.ktor.routing.get
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.awaitAll
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -93,7 +94,7 @@ private suspend fun saveEffortsForActivities(
     database: DatabaseConnector
 ): List<ActivityDetails> {
     val activityDetailsChunked = ids.chunked(20).map { chunkOfIds ->
-        chunkOfIds.map { id -> async { api.getActivity(id) } }
+        chunkOfIds.map { id -> GlobalScope.async { api.getActivity(id) } }
             .awaitAll()
     }
 

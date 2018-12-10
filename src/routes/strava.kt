@@ -5,8 +5,8 @@ import io.ktor.application.call
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.awaitAll
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 

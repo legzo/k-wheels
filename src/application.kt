@@ -12,10 +12,13 @@ import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.jackson.jackson
 import io.ktor.routing.routing
+import io.ktor.server.netty.EngineMain
+import io.ktor.util.KtorExperimentalAPI
 import org.slf4j.event.Level
 
-fun main(args: Array<String>): Unit = io.ktor.server.netty.DevelopmentEngine.main(args)
+fun main(args: Array<String>): Unit = EngineMain.main(args)
 
+@KtorExperimentalAPI
 fun Application.module() {
 
     val stravaConnector = StravaConnector(
