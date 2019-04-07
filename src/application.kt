@@ -10,7 +10,7 @@ import io.ktor.application.Application
 import io.ktor.application.install
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
-import io.ktor.jackson.jackson
+import io.ktor.gson.gson
 import io.ktor.routing.routing
 import io.ktor.server.netty.EngineMain
 import io.ktor.util.KtorExperimentalAPI
@@ -35,7 +35,7 @@ fun Application.module() {
     }
 
     install(ContentNegotiation) {
-        jackson { }
+        gson { }
     }
 
     routing {
