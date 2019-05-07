@@ -32,8 +32,9 @@ fun Route.dbRoutes(
 
         val activitiesToSync = apiActivities.minus(dbActivities)
 
-        val updated = if (!activitiesToSync.isEmpty()) {
+        val updated = if (activitiesToSync.isNotEmpty()) {
             database.saveActivities(activitiesToSync)
+            logger.info("Fetching ${activitiesToSync.size} activities from Strava")
             val activityDetails = saveEffortsForActivities(activitiesToSync.map(Activity::id), api, database)
 
             database.getActivitiesStats(activityDetails)
