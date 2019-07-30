@@ -6,7 +6,8 @@ data class Activity(
     val id: String,
     val name: String,
     val distance: Float,
-    @SerializedName("moving_time") val movingTime: Int
+    @SerializedName("moving_time") val movingTime: Int,
+    val commute: Boolean
 )
 
 data class ActivityDetails(

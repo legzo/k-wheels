@@ -15,12 +15,12 @@ class StravaConnector(private val endpoint: StravaEndpoint) {
     private val perPage = 200
     private val maxPage = 20
 
-    suspend fun getAllActivities(): List<Activity> {
+    suspend fun getAllActivities(year: Int? = null): List<Activity> {
 
         val allActivities = mutableListOf<Activity>()
 
         for (pageIndex in 1..maxPage) {
-            val activities = getActivitiesPage(pageIndex)
+            val activities = getActivitiesPage(pageIndex, year)
             allActivities.addAll(activities)
             if (activities.size < perPage) break
         }
@@ -34,8 +34,8 @@ class StravaConnector(private val endpoint: StravaEndpoint) {
         return client.get(url)
     }
 
-    private suspend fun getActivitiesPage(page: Number = 0): List<Activity> {
-        val url = endpoint.forActivities(perPage, page)
+    private suspend fun getActivitiesPage(page: Number = 0, year: Int? = null): List<Activity> {
+        val url = endpoint.forActivities(perPage, page, year)
         logger.info("Calling $url")
         return client.get(url)
     }
