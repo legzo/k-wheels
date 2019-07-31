@@ -13,8 +13,17 @@ data class EffortStats(
 )
 
 data class YearSummary(
-    val numberOfCommuteActivities: Int,
-    val numberOfActivities: Int,
-    val distanceForCommute: Int,
-    val totalDistance: Int
+    val commuteActivitiesCount: Int,
+    val totalActivitiesCount: Int,
+    val commuteDistance: Int,
+    val totalDistance: Int,
+    val distanceByMonth: Map<Int, Int>,
+    val distanceByMonthVisual: Map<Int, String> = distanceByMonth
+        .map { it.key to it.value.asVisual() }
+        .toMap()
 )
+
+private fun Int.asVisual(): String {
+    val width = this / 5
+    return (0 until width).joinToString(separator = "") { "🁢" }
+}

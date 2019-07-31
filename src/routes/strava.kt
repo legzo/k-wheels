@@ -3,6 +3,7 @@ package com.orange.ccmd.sandbox.routes
 import com.orange.ccmd.sandbox.models.YearSummary
 import com.orange.ccmd.sandbox.strava.StravaConnector
 import com.orange.ccmd.sandbox.strava.models.Activity
+import com.orange.ccmd.sandbox.strava.models.toKm
 import io.ktor.application.call
 import io.ktor.response.respond
 import io.ktor.routing.Route
@@ -45,15 +46,24 @@ fun Route.stravaRoutes(api: StravaConnector) {
         val allActivitiesForYear = api.getAllActivities(year)
         val commuteActivitiesForYear = allActivitiesForYear.filter { it.commute }
 
-        fun distanceToKm(it: Activity) = it.distance.toInt() / 1000
+        val distanceForEachMonth =
+            (1..12)
+                .map { it to commuteActivitiesForYear.totalForMonth(it) }
+                .toMap()
 
+        val message = YearSummary(
+            commuteActivitiesCount = commuteActivitiesForYear.size,
+            totalActivitiesCount = allActivitiesForYear.size,
+            commuteDistance = commuteActivitiesForYear.sumBy { it.distance.toKm() },
+            totalDistance = allActivitiesForYear.sumBy { it.distance.toKm() },
+            distanceByMonth = distanceForEachMonth
+        )
         call.respond(
-            YearSummary(
-                numberOfCommuteActivities = commuteActivitiesForYear.size,
-                numberOfActivities = allActivitiesForYear.size,
-                distanceForCommute = commuteActivitiesForYear.sumBy(::distanceToKm),
-                totalDistance = allActivitiesForYear.sumBy(::distanceToKm)
-            )
+            message
         )
     }
 }
+
+private fun Collection<Activity>.totalForMonth(monthAsInt: Int) =
+    filter { it.startDate.month.value == monthAsInt }
+        .sumBy { it.distance.toKm() }

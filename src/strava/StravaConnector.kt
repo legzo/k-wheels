@@ -1,13 +1,21 @@
 package com.orange.ccmd.sandbox.strava
 
+import com.google.gson.JsonDeserializationContext
+import com.google.gson.JsonDeserializer
+import com.google.gson.JsonElement
 import com.orange.ccmd.sandbox.strava.models.Activity
 import com.orange.ccmd.sandbox.strava.models.ActivityDetails
 import io.ktor.client.HttpClient
+import io.ktor.client.engine.apache.Apache
 import io.ktor.client.features.json.GsonSerializer
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.request.get
+import org.apache.http.HttpHost
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.lang.reflect.Type
+import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 class StravaConnector(private val endpoint: StravaEndpoint) {
 
@@ -41,9 +49,25 @@ class StravaConnector(private val endpoint: StravaEndpoint) {
     }
 
     private val client by lazy {
-        HttpClient {
+        HttpClient(Apache) {
             install(JsonFeature) {
-                serializer = GsonSerializer()
+                serializer = GsonSerializer {
+                    registerTypeAdapter(LocalDateTime::class.java, object : JsonDeserializer<LocalDateTime> {
+                        override fun deserialize(
+                            json: JsonElement?,
+                            typeOfT: Type?,
+                            context: JsonDeserializationContext?
+                        ): LocalDateTime {
+                            return ZonedDateTime.parse(json?.asJsonPrimitive?.asString).toLocalDateTime()
+                        }
+                    })
+                }
+            }
+
+            engine {
+                customizeClient {
+                    setProxy(HttpHost("localhost", 3128))
+                }
             }
         }
     }

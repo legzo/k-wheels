@@ -1,5 +1,7 @@
 package com.orange.ccmd.sandbox.models
 
+import kotlin.math.roundToInt
+
 data class SegmentData(val id: String, val name: String, val efforts: MutableMap<String, Float>) {
 
     // 🤮
@@ -26,5 +28,5 @@ data class SegmentData(val id: String, val name: String, val efforts: MutableMap
         return 1.toFloat()
     }
 
-    fun roundedPercentile(time: Float) = Math.round(percentile(time).times(100)).toFloat().div(100)
+    fun roundedPercentile(time: Float) = percentile(time).times(100).roundToInt().toFloat().div(100)
 }
