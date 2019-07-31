@@ -9,11 +9,13 @@ buildscript {
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.github.jengelman.gradle.plugins:shadow:5.1.0'
     }
 }
 
 apply plugin: 'kotlin'
 apply plugin: 'application'
+apply plugin: 'com.github.johnrengelman.shadow'
 
 group 'jte-experiments'
 version '0.0.1'
@@ -80,13 +82,4 @@ task ktlintFormat(type: JavaExec, group: "formatting") {
     main = "com.github.shyiko.ktlint.Main"
     classpath = configurations.ktlint
     args "-F", "src/**/*.kt"
-}
-
-jar {
-    manifest {
-        attributes(
-            'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
-            'Main-Class': 'com.orange.ccmd.sandbox.ApplicationKt'
-        )
-    }
 }
