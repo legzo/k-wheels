@@ -17,7 +17,11 @@ import java.lang.reflect.Type
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 
-class StravaConnector(private val endpoint: StravaEndpoint) {
+class StravaConnector(
+    private val endpoint: StravaEndpoint,
+    private val proxyHost: String?,
+    private val proxyPort: Int?
+) {
 
     private val logger: Logger = LoggerFactory.getLogger("StravaConnector")
     private val perPage = 200
@@ -66,7 +70,9 @@ class StravaConnector(private val endpoint: StravaEndpoint) {
 
             engine {
                 customizeClient {
-                    setProxy(HttpHost("localhost", 3128))
+                    if (proxyHost != null && proxyPort != null) {
+                        setProxy(HttpHost(proxyHost, proxyPort))
+                    }
                 }
             }
         }

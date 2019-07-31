@@ -25,7 +25,9 @@ fun Application.module() {
         StravaEndpoint(
             rootUrl = "https://www.strava.com/api/v3",
             apiToken = environment.config.property("apiToken").getString()
-        )
+        ),
+        proxyHost = environment.config.propertyOrNull("proxyHost")?.getString(),
+        proxyPort = environment.config.propertyOrNull("proxyPort")?.getString()?.toInt()
     )
 
     val dbConnector = DatabaseConnector("resources/strava.db")
