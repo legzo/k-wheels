@@ -94,10 +94,14 @@ private suspend fun saveEffortsForActivities(
     api: StravaConnector,
     database: DatabaseConnector
 ): List<ActivityDetails> {
-    val activityDetailsChunked = ids.chunked(20).map { chunkOfIds ->
-        chunkOfIds.map { id -> GlobalScope.async { api.getActivity(id) } }
-            .awaitAll()
-    }
+    val activityDetailsChunked = ids
+        .chunked(20)
+        .map { chunkOfIds ->
+            chunkOfIds
+                .map { id ->
+                    GlobalScope.async { api.getActivity(id) } }
+                .awaitAll()
+        }
 
     val activityDetails = activityDetailsChunked.flatten()
     activityDetails.forEach(database::saveEfforts)
