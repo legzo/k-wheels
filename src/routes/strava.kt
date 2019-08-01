@@ -48,7 +48,7 @@ fun Route.stravaRoutes(api: StravaConnector) {
 
         val distanceForEachMonth =
             (1..12)
-                .map { it to commuteActivitiesForYear.totalForMonth(it) }
+                .map { it to allActivitiesForYear.totalForMonth(it) }
                 .toMap()
 
         val message = YearSummary(
