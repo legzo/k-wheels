@@ -20,4 +20,4 @@ data class ActivityDetails(
     @SerializedName("segment_efforts") val segmentEfforts: List<SegmentEffort>
 )
 
-fun Float.toKm(): Int = this.toInt() / 1000
+fun Float.toKm(): Double = this.toDouble() / 1000

@@ -54,16 +54,17 @@ fun Route.stravaRoutes(api: StravaConnector) {
         val message = YearSummary(
             commuteActivitiesCount = commuteActivitiesForYear.size,
             totalActivitiesCount = allActivitiesForYear.size,
-            commuteDistance = commuteActivitiesForYear.sumBy { it.distance.toKm() },
-            totalDistance = allActivitiesForYear.sumBy { it.distance.toKm() },
+            commuteDistance = commuteActivitiesForYear.totalDistanceInKm(),
+            totalDistance = allActivitiesForYear.totalDistanceInKm(),
             distanceByMonth = distanceForEachMonth
         )
-        call.respond(
-            message
-        )
+        call.respond(message)
     }
 }
 
 private fun Collection<Activity>.totalForMonth(monthAsInt: Int) =
     filter { it.startDate.month.value == monthAsInt }
-        .sumBy { it.distance.toKm() }
+        .totalDistanceInKm()
+
+private fun Collection<Activity>.totalDistanceInKm() =
+    sumByDouble { it.distance.toKm() }.toInt()
