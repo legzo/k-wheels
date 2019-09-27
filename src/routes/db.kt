@@ -30,7 +30,7 @@ fun Route.dbRoutes(
         val apiActivities = api.getAllActivities()
         val dbActivities = database.getAllActivities()
 
-        val activitiesToSync = apiActivities.minus(dbActivities)
+        val activitiesToSync = apiActivities - dbActivities
 
         val updated = if (activitiesToSync.isNotEmpty()) {
             database.saveActivities(activitiesToSync)
