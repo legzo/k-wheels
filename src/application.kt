@@ -27,7 +27,10 @@ fun Application.module() {
             apiToken = environment.config.property("apiToken").getString()
         ),
         proxyHost = environment.config.propertyOrNull("proxyHost")?.getString(),
-        proxyPort = environment.config.propertyOrNull("proxyPort")?.getString()?.toInt()
+        proxyPort = environment.config.propertyOrNull("proxyPort")?.getString()?.toInt(),
+        apiCode = environment.config.propertyOrNull("apiCode")?.getString().orEmpty(),
+        apiClientId = environment.config.propertyOrNull("apiClientId")?.getString().orEmpty(),
+        apiClientSecret = environment.config.propertyOrNull("apiClientSecret")?.getString().orEmpty()
     )
 
     val dbConnector = DatabaseConnector("resources/strava.db")

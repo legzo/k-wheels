@@ -17,7 +17,9 @@ data class StravaEndpoint(
     fun forActivities(perPage: Number = 200, page: Number = 1, year: Int? = null): String {
         val url = "$rootUrl/activities?per_page=$perPage&page=$page&access_token=$apiToken"
         return if (year != null) {
-            return url.plus("&before=${year.endAsEpoch}&after=${year.startAsEpoch}")
+            url.plus("&before=${year.endAsEpoch}&after=${year.startAsEpoch}")
         } else url
     }
+
+    fun forToken() = "https://www.strava.com/oauth/token"
 }
