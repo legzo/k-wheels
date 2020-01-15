@@ -21,16 +21,17 @@ fun main(args: Array<String>): Unit = EngineMain.main(args)
 @KtorExperimentalAPI
 fun Application.module() {
 
-    val stravaConnector = StravaConnector(
-        StravaEndpoint(
-            rootUrl = "https://www.strava.com/api/v3",
-            apiToken = environment.config.property("apiToken").getString()
-        ),
-        proxyHost = environment.config.propertyOrNull("proxyHost")?.getString(),
-        proxyPort = environment.config.propertyOrNull("proxyPort")?.getString()?.toInt()
-    )
-
     val dbConnector = DatabaseConnector("resources/strava.db")
+
+    val stravaConnector = StravaConnector(
+        StravaEndpoint(rootUrl = "https://www.strava.com/api/v3"),
+        proxyHost = environment.config.propertyOrNull("proxyHost")?.getString(),
+        proxyPort = environment.config.propertyOrNull("proxyPort")?.getString()?.toInt(),
+        apiCode = environment.config.propertyOrNull("apiCode")?.getString().orEmpty(),
+        apiClientId = environment.config.propertyOrNull("apiClientId")?.getString().orEmpty(),
+        apiClientSecret = environment.config.propertyOrNull("apiClientSecret")?.getString().orEmpty(),
+        database = dbConnector
+    )
 
     install(CallLogging) {
         level = Level.INFO

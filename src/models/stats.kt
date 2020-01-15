@@ -17,8 +17,8 @@ data class YearSummary(
     val totalActivitiesCount: Int,
     val commuteDistance: Int,
     val totalDistance: Int,
-    val distanceByMonth: Map<Int, Int>,
-    val distanceByMonthVisual: Map<Int, String> = distanceByMonth
+    val distanceByMonth: Map<String, Int>,
+    val distanceByMonthVisual: Map<String, String> = distanceByMonth
         .map { it.key to it.value.asVisual() }
         .toMap()
 )
