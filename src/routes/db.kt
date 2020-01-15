@@ -87,6 +87,11 @@ fun Route.dbRoutes(
         database.clearSegmentData()
         call.respond(mapOf("segments" to "cleared"))
     }
+
+    get("/db/tokens/clear") {
+        database.clearTokens()
+        call.respond(mapOf("tokens" to "cleared"))
+    }
 }
 
 private suspend fun saveEffortsForActivities(
@@ -98,8 +103,7 @@ private suspend fun saveEffortsForActivities(
         .chunked(20)
         .map { chunkOfIds ->
             chunkOfIds
-                .map { id ->
-                    GlobalScope.async { api.getActivity(id) } }
+                .map { id -> GlobalScope.async { api.getActivity(id) } }
                 .awaitAll()
         }
 

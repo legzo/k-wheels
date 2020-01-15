@@ -54,6 +54,8 @@ dependencies {
     compile "io.ktor:ktor-client-json:$ktor_version"
     compile "io.ktor:ktor-client-gson:$ktor_version"
     compile "io.ktor:ktor-client-apache:$ktor_version"
+    compile "io.ktor:ktor-client-logging:$ktor_version"
+    compile "io.ktor:ktor-client-logging-jvm:$ktor_version"
 
     compile 'org.dizitart:potassium-nitrite:3.2.0'
 

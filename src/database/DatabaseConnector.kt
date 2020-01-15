@@ -5,6 +5,7 @@ import com.orange.ccmd.sandbox.models.EffortStats
 import com.orange.ccmd.sandbox.models.SegmentData
 import com.orange.ccmd.sandbox.strava.models.Activity
 import com.orange.ccmd.sandbox.strava.models.ActivityDetails
+import com.orange.ccmd.sandbox.strava.models.TokenResponse
 import org.dizitart.kno2.filters.eq
 import org.dizitart.kno2.getRepository
 import org.dizitart.kno2.nitrite
@@ -24,6 +25,20 @@ class DatabaseConnector(private val dbFile: String) {
 
     private val segmentDataRepo = db.getRepository<SegmentData>()
     private val activityRepo = db.getRepository<Activity>()
+    private val tokenRepo = db.getRepository<TokenResponse>()
+
+    fun getLastToken(): TokenResponse? {
+        return tokenRepo.find().toList().firstOrNull()
+    }
+
+    fun updateToken(newToken: TokenResponse) {
+        clearTokens()
+        tokenRepo.insert(newToken)
+    }
+
+    fun clearTokens() {
+        tokenRepo.remove(ObjectFilters.ALL)
+    }
 
     fun saveActivities(activities: List<Activity>) {
         activityRepo.insert(activities.toTypedArray())
