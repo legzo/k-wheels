@@ -10,9 +10,13 @@ import org.dizitart.kno2.filters.eq
 import org.dizitart.kno2.getRepository
 import org.dizitart.kno2.nitrite
 import org.dizitart.no2.objects.filters.ObjectFilters
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.io.File
 
 class DatabaseConnector(private val dbFile: String) {
+
+    private val logger: Logger = LoggerFactory.getLogger("DatabaseConnector")
 
     private val db by lazy {
         nitrite {
@@ -27,16 +31,17 @@ class DatabaseConnector(private val dbFile: String) {
     private val activityRepo = db.getRepository<Activity>()
     private val tokenRepo = db.getRepository<TokenResponse>()
 
-    fun getLastToken(): TokenResponse? {
+    fun getToken(): TokenResponse? {
         return tokenRepo.find().toList().firstOrNull()
     }
 
     fun updateToken(newToken: TokenResponse) {
-        clearTokens()
+        logger.info("Updating token with new value : $newToken")
+        clearToken()
         tokenRepo.insert(newToken)
     }
 
-    fun clearTokens() {
+    fun clearToken() {
         tokenRepo.remove(ObjectFilters.ALL)
     }
 

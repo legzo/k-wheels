@@ -1,6 +1,10 @@
 package com.orange.ccmd.sandbox
 
+import com.google.gson.JsonPrimitive
+import com.google.gson.JsonSerializationContext
+import com.google.gson.JsonSerializer
 import com.orange.ccmd.sandbox.database.DatabaseConnector
+import com.orange.ccmd.sandbox.remote.RemoteDBConnector
 import com.orange.ccmd.sandbox.routes.analysis
 import com.orange.ccmd.sandbox.routes.dbRoutes
 import com.orange.ccmd.sandbox.routes.stravaRoutes
@@ -15,18 +19,29 @@ import io.ktor.routing.routing
 import io.ktor.server.netty.EngineMain
 import io.ktor.util.KtorExperimentalAPI
 import org.slf4j.event.Level
+import java.lang.reflect.Type
+import java.time.LocalDateTime
 
 fun main(args: Array<String>): Unit = EngineMain.main(args)
 
 @KtorExperimentalAPI
 fun Application.module() {
 
+    val proxyHost = environment.config.propertyOrNull("proxyHost")?.getString()
+    val proxyPort = environment.config.propertyOrNull("proxyPort")?.getString()?.toInt()
+
+    val remoteDBConnector = RemoteDBConnector(
+        endpoint = "http://localhost:8080",
+        proxyHost = proxyHost,
+        proxyPort = proxyPort
+    )
+
     val dbConnector = DatabaseConnector("resources/strava.db")
 
     val stravaConnector = StravaConnector(
         StravaEndpoint(rootUrl = "https://www.strava.com/api/v3"),
-        proxyHost = environment.config.propertyOrNull("proxyHost")?.getString(),
-        proxyPort = environment.config.propertyOrNull("proxyPort")?.getString()?.toInt(),
+        proxyHost = proxyHost,
+        proxyPort = proxyPort,
         apiCode = environment.config.propertyOrNull("apiCode")?.getString().orEmpty(),
         apiClientId = environment.config.propertyOrNull("apiClientId")?.getString().orEmpty(),
         apiClientSecret = environment.config.propertyOrNull("apiClientSecret")?.getString().orEmpty(),
@@ -38,12 +53,20 @@ fun Application.module() {
     }
 
     install(ContentNegotiation) {
-        gson { }
+        gson {
+            registerTypeAdapter(LocalDateTime::class.java, object : JsonSerializer<LocalDateTime> {
+                override fun serialize(
+                    src: LocalDateTime?,
+                    typeOfSrc: Type?,
+                    context: JsonSerializationContext?
+                ) = JsonPrimitive(src.toString())
+            })
+        }
     }
 
     routing {
         stravaRoutes(stravaConnector)
-        dbRoutes(stravaConnector, dbConnector)
+        dbRoutes(stravaConnector, dbConnector, remoteDBConnector)
         analysis(stravaConnector, dbConnector)
     }
 }
