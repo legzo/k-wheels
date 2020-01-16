@@ -41,7 +41,7 @@ class StravaConnector(
     private val maxPage = 20
 
     private suspend fun getToken(): TokenResponse {
-        val tokenFromDB = database.getLastToken()
+        val tokenFromDB = database.getToken()
         logger.info("Access token from db : $tokenFromDB")
 
         return if (tokenFromDB == null) {

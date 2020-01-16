@@ -2,6 +2,7 @@ package com.orange.ccmd.sandbox.routes
 
 import com.orange.ccmd.sandbox.database.DatabaseConnector
 import com.orange.ccmd.sandbox.models.SynchronizationInfos
+import com.orange.ccmd.sandbox.remote.RemoteDBConnector
 import com.orange.ccmd.sandbox.strava.StravaConnector
 import com.orange.ccmd.sandbox.strava.models.Activity
 import com.orange.ccmd.sandbox.strava.models.ActivityDetails
@@ -20,7 +21,8 @@ import org.slf4j.LoggerFactory
 
 fun Route.dbRoutes(
     api: StravaConnector,
-    database: DatabaseConnector
+    database: DatabaseConnector,
+    remoteDBConnector: RemoteDBConnector
 ) {
 
     val logger: Logger = LoggerFactory.getLogger("DatabaseAPI")
@@ -88,9 +90,22 @@ fun Route.dbRoutes(
         call.respond(mapOf("segments" to "cleared"))
     }
 
-    get("/db/tokens/clear") {
-        database.clearTokens()
-        call.respond(mapOf("tokens" to "cleared"))
+    get("/db/token/clear") {
+        database.clearToken()
+        call.respond(mapOf("token" to "cleared"))
+    }
+
+    get("/db/token/sync") {
+        val remoteToken = remoteDBConnector.getRemoteToken()
+        logger.info("Syncing token from remote, got : $remoteToken")
+        database.updateToken(remoteToken)
+        call.respond(remoteToken)
+    }
+
+    get("/db/token") {
+        val token = database.getToken()
+        if (token != null) call.respond(token)
+        else call.respond(NotFound)
     }
 }
 
