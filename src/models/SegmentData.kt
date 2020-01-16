@@ -25,5 +25,16 @@ data class SegmentData(val id: String, val name: String, val efforts: MutableMap
         return 1.toFloat()
     }
 
+    fun position(time: Float): Int {
+        val sorted = efforts.values.sorted()
+        return sorted.indexOf(time) + 1
+    }
+
+    fun positionAsString(time: Float): String {
+        val sorted = efforts.values.sorted()
+        val position = sorted.indexOf(time) + 1
+        return "$position / ${efforts.size}"
+    }
+
     fun roundedPercentile(time: Float) = percentile(time).times(100).roundToInt().toFloat().div(100)
 }

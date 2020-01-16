@@ -15,9 +15,10 @@ data class Activity(
 data class ActivityDetails(
     val id: String,
     val name: String,
+    @SerializedName("start_date_local") val startDate: LocalDateTime,
     val distance: Float,
     @SerializedName("moving_time") val movingTime: Int,
-    @SerializedName("segment_efforts") val segmentEfforts: List<SegmentEffort>
+    @SerializedName("segment_efforts") val segmentEfforts: List<SegmentEffort>?
 )
 
 fun Float.toKm(): Double = this.toDouble() / 1000

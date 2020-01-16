@@ -18,6 +18,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import kotlin.math.min
 
 fun Route.dbRoutes(
     api: StravaConnector,
@@ -27,12 +28,23 @@ fun Route.dbRoutes(
 
     val logger: Logger = LoggerFactory.getLogger("DatabaseAPI")
 
-    get("/db/syncActivities") {
-        logger.info("Syncing activities from db")
+    get("/db/syncActivities/{limit}") {
+        val limit = call.parameters["limit"]
+        if (limit != null) {
+            logger.info("Syncing activities from db with a limit of $limit")
+        } else {
+            logger.info("Syncing activities from db with no limit")
+        }
+
         val apiActivities = api.getAllActivities()
         val dbActivities = database.getAllActivities()
 
-        val activitiesToSync = apiActivities - dbActivities
+        val activitiesNotPresentLocally = apiActivities - dbActivities
+
+        val activitiesToSync = if (limit != null) {
+            val toIndex = min(limit.toInt(), activitiesNotPresentLocally.size)
+            activitiesNotPresentLocally.subList(0, toIndex)
+        } else activitiesNotPresentLocally
 
         val updated = if (activitiesToSync.isNotEmpty()) {
             database.saveActivities(activitiesToSync)
@@ -50,6 +62,12 @@ fun Route.dbRoutes(
         val activities = database.getAllActivities()
         logger.info("${activities.size} activites found, returning first ten")
         call.respond(activities.subList(0, 10))
+    }
+
+    delete("/db/activities") {
+        logger.info("Clearing activities from db")
+        database.clearActivities()
+        call.respond(OK)
     }
 
     get("/db/activities/{id}") {
@@ -72,7 +90,7 @@ fun Route.dbRoutes(
         val id = call.parameters["id"].orEmpty()
         val activity = api.getActivity(id)
         database.saveEfforts(activity)
-        call.respond(mapOf("injectedSegments" to activity.segmentEfforts.size))
+        call.respond(mapOf("injectedSegments" to (activity.segmentEfforts?.size ?: 0)))
     }
 
     get("/db/segments/{id}") {
@@ -85,7 +103,8 @@ fun Route.dbRoutes(
         call.respond(database.getSegmentData())
     }
 
-    get("/db/segments/clear") {
+    delete("/db/segments") {
+        logger.info("Clearing segments")
         database.clearSegmentData()
         call.respond(mapOf("segments" to "cleared"))
     }

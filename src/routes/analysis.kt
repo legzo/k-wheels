@@ -3,6 +3,7 @@ package com.orange.ccmd.sandbox.routes
 import com.orange.ccmd.sandbox.database.DatabaseConnector
 import com.orange.ccmd.sandbox.strava.StravaConnector
 import io.ktor.application.call
+import io.ktor.http.HttpStatusCode.Companion.NotFound
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
@@ -23,6 +24,7 @@ fun Route.analysis(
         val activity = api.getActivity(id)
         val activityStats = database.getActivityStats(activity)
 
-        call.respond(activityStats)
+        if (activityStats != null) call.respond(activityStats)
+        else call.respond(NotFound)
     }
 }

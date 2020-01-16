@@ -1,12 +1,10 @@
 package com.orange.ccmd.sandbox.strava
 
-import com.google.gson.JsonDeserializationContext
-import com.google.gson.JsonDeserializer
-import com.google.gson.JsonElement
 import com.orange.ccmd.sandbox.database.DatabaseConnector
 import com.orange.ccmd.sandbox.strava.models.Activity
 import com.orange.ccmd.sandbox.strava.models.ActivityDetails
 import com.orange.ccmd.sandbox.strava.models.TokenResponse
+import com.orange.ccmd.sandbox.utils.StravaDateTimeDeserializer
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache.Apache
 import io.ktor.client.features.json.GsonSerializer
@@ -21,10 +19,7 @@ import org.apache.http.HttpHeaders
 import org.apache.http.HttpHost
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.lang.reflect.Type
 import java.time.LocalDateTime
-import java.time.ZoneOffset
-import java.time.ZonedDateTime
 
 class StravaConnector(
     private val endpoint: StravaEndpoint,
@@ -42,7 +37,7 @@ class StravaConnector(
 
     private suspend fun getToken(): TokenResponse {
         val tokenFromDB = database.getToken()
-        logger.info("Access token from db : $tokenFromDB")
+        logger.trace("Access token from db : $tokenFromDB")
 
         return if (tokenFromDB == null) {
             val newTokenFromStrava = getNewAccessToken()
@@ -114,27 +109,14 @@ class StravaConnector(
         HttpClient(Apache) {
 
             install(Logging) {
-                level = LogLevel.INFO
+                level = LogLevel.NONE
             }
 
             expectSuccess = false
 
             install(JsonFeature) {
                 serializer = GsonSerializer {
-                    registerTypeAdapter(LocalDateTime::class.java, object : JsonDeserializer<LocalDateTime> {
-                        override fun deserialize(
-                            json: JsonElement?,
-                            typeOfT: Type?,
-                            context: JsonDeserializationContext?
-                        ): LocalDateTime {
-                            val asString = json?.asJsonPrimitive?.asString ?: return LocalDateTime.now()
-
-                            return if (asString.startsWith("1")) {
-                                val epoch = asString.toLong()
-                                LocalDateTime.ofEpochSecond(epoch, 0, ZoneOffset.UTC)
-                            } else ZonedDateTime.parse(asString).toLocalDateTime()
-                        }
-                    })
+                    registerTypeAdapter(LocalDateTime::class.java, StravaDateTimeDeserializer)
                 }
             }
 

@@ -8,5 +8,5 @@ data class TokenResponse(
     @SerializedName("expires_at") val expiresAt: LocalDateTime,
     @SerializedName("refresh_token") val refreshToken: String
 ) {
-    fun isExpired() = LocalDateTime.now().isAfter(this.expiresAt.minusHours(6))
+    fun isExpired() = LocalDateTime.now().isAfter(this.expiresAt)
 }

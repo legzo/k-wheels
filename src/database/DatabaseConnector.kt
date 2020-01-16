@@ -42,7 +42,9 @@ class DatabaseConnector(private val dbFile: String) {
     }
 
     fun clearToken() {
-        tokenRepo.remove(ObjectFilters.ALL)
+        if (tokenRepo.find().totalCount() > 0) {
+            tokenRepo.remove(ObjectFilters.ALL)
+        }
     }
 
     fun saveActivities(activities: List<Activity>) {
@@ -66,7 +68,7 @@ class DatabaseConnector(private val dbFile: String) {
     }
 
     fun saveEfforts(activity: ActivityDetails) {
-        activity.segmentEfforts.forEach { effort ->
+        activity.segmentEfforts?.forEach { effort ->
             val segmentData = getSegmentData(effort.segment.id)
             if (segmentData == null) {
                 createSegmentData(effort.segment.id, effort.segment.name, activity.id, effort.elapsedTime)
@@ -85,19 +87,29 @@ class DatabaseConnector(private val dbFile: String) {
         segmentDataRepo.update(SegmentData::id eq segmentData.id, segmentData)
     }
 
-    fun getActivityStats(activity: ActivityDetails): ActivityStats {
+    fun getActivityStats(activity: ActivityDetails): ActivityStats? {
+        if (activity.segmentEfforts == null) return null
+
         val stats = activity.segmentEfforts.map { effort ->
             val segmentData = getSegmentData(effort.segment.id)
             if (segmentData != null) {
-                EffortStats(effort.segment.id, effort.segment.name, segmentData.roundedPercentile(effort.elapsedTime))
-            } else EffortStats(effort.segment.id, effort.segment.name, -1)
+                val time = effort.elapsedTime
+                EffortStats(
+                    effort.segment.id,
+                    effort.segment.name,
+                    segmentData.roundedPercentile(time),
+                    segmentData.positionAsString(time),
+                    segmentData.position(time),
+                    segmentData.efforts.size
+                )
+            } else EffortStats(effort.segment.id, effort.segment.name, -1, "", -1, -1)
         }
 
         return ActivityStats(activity.id, activity.name, stats)
     }
 
     fun getActivitiesStats(activityDetails: List<ActivityDetails>): List<ActivityStats> {
-        return activityDetails.map { getActivityStats(it) }
+        return activityDetails.mapNotNull { getActivityStats(it) }
     }
 
     fun deleteActivity(id: String): Boolean {
