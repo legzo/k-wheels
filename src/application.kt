@@ -10,6 +10,7 @@ import com.orange.ccmd.sandbox.strava.StravaEndpoint
 import com.orange.ccmd.sandbox.utils.LocalDateTimeSerializer
 import io.ktor.application.Application
 import io.ktor.application.install
+import io.ktor.features.CORS
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.gson.gson
@@ -47,6 +48,10 @@ fun Application.module() {
 
     install(CallLogging) {
         level = Level.INFO
+    }
+
+    install(CORS) {
+        anyHost()
     }
 
     install(ContentNegotiation) {
