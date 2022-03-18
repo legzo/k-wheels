@@ -1,8 +1,10 @@
 package com.orange.ccmd.sandbox.database
 
+import com.orange.ccmd.sandbox.models.ActivityDetailedStats
 import com.orange.ccmd.sandbox.models.ActivityStats
 import com.orange.ccmd.sandbox.models.EffortStats
 import com.orange.ccmd.sandbox.models.SegmentData
+import com.orange.ccmd.sandbox.models.SegmentStats
 import com.orange.ccmd.sandbox.strava.models.Activity
 import com.orange.ccmd.sandbox.strava.models.ActivityDetails
 import com.orange.ccmd.sandbox.strava.models.TokenResponse
@@ -107,6 +109,33 @@ class DatabaseConnector(private val dbFile: String) {
 
         return ActivityStats(activity.id, activity.name, stats)
     }
+
+    fun getActivityDetailedStats(activity: ActivityDetails): ActivityDetailedStats? {
+        if (activity.segmentEfforts == null) return null
+
+        val segments = activity.segmentEfforts
+            .mapNotNull { effort ->
+                val segmentData = getSegmentData(effort.segment.id)
+                if (segmentData != null) {
+                    val time = effort.elapsedTime
+                    SegmentStats(
+                        effort.segment.id,
+                        effort.segment.name,
+                        segmentData.roundedPercentile(time),
+                        effort.elapsedTime,
+                        segmentData.efforts.values.toList()
+                    )
+                } else null
+            }
+
+        return ActivityDetailedStats(
+            activity.id,
+            activity.startDate,
+            activity.name,
+            segments
+        )
+    }
+
 
     fun getActivitiesStats(activityDetails: List<ActivityDetails>): List<ActivityStats> {
         return activityDetails.mapNotNull { getActivityStats(it) }

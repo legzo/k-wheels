@@ -8,6 +8,7 @@ import io.ktor.application.call
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import org.slf4j.Logger
@@ -20,7 +21,7 @@ fun Route.stravaRoutes(api: StravaConnector) {
     get("/activities") {
         logger.info("Getting all activities")
         val activities = api.getAllActivities()
-        logger.info("${activities.size} activites found, returning first ten")
+        logger.info("${activities.size} activities found, returning first ten")
         call.respond(activities.subList(0, 10))
     }
 
@@ -35,7 +36,7 @@ fun Route.stravaRoutes(api: StravaConnector) {
         val ids = call.request.queryParameters["ids"].orEmpty()
         logger.info("Getting activities with ids = $ids")
         val activityIds = ids.split(",")
-        val tasks = activityIds.map { id -> async { api.getActivity(id) } }
+        val tasks = activityIds.map { id -> GlobalScope.async { api.getActivity(id) } }
         call.respond(tasks.awaitAll())
     }
 
@@ -48,8 +49,9 @@ fun Route.stravaRoutes(api: StravaConnector) {
 
         val distanceForEachMonth =
             (1..12)
-                .map { it.toString().padStart(2, '0') to allActivitiesForYear.totalForMonth(it) }
-                .toMap()
+                .associate {
+                    it.toString().padStart(2, '0') to allActivitiesForYear.totalForMonth(it)
+                }
 
         val message = YearSummary(
             commuteActivitiesCount = commuteActivitiesForYear.size,

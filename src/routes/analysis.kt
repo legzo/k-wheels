@@ -27,4 +27,15 @@ fun Route.analysis(
         if (activityStats != null) call.respond(activityStats)
         else call.respond(NotFound)
     }
+
+    get("/analysis/activities/{id}/details") {
+        val id = call.parameters["id"].orEmpty()
+        logger.info("Analysing activity with id = $id")
+
+        val activity = api.getActivity(id)
+        val activityStats = database.getActivityDetailedStats(activity)
+
+        if (activityStats != null) call.respond(activityStats)
+        else call.respond(NotFound)
+    }
 }

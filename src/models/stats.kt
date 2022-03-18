@@ -1,9 +1,27 @@
 package com.orange.ccmd.sandbox.models
 
+import java.time.LocalDateTime
+import java.util.SortedMap
+
+data class ActivityDetailedStats(
+    val id: String,
+    val date: LocalDateTime,
+    val name: String,
+    val segments: List<SegmentStats>?
+)
+
 data class ActivityStats(
     val id: String,
     val name: String,
     val efforts: List<EffortStats>?
+)
+
+data class SegmentStats(
+    val id: String,
+    val name: String,
+    val percentile: Number,
+    val time: Float,
+    val pastTimes: List<Float>
 )
 
 data class EffortStats(
