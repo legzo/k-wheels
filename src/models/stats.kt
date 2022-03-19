@@ -1,7 +1,6 @@
 package com.orange.ccmd.sandbox.models
 
 import java.time.LocalDateTime
-import java.util.SortedMap
 
 data class ActivityDetailedStats(
     val id: String,

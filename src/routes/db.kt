@@ -60,7 +60,7 @@ fun Route.dbRoutes(
     get("/db/activities") {
         logger.info("Getting activities from db")
         val activities = database.getAllActivities()
-        logger.info("${activities.size} activites found, returning first ten")
+        logger.info("${activities.size} activities found, returning first ten")
         call.respond(activities.subList(0, 10))
     }
 

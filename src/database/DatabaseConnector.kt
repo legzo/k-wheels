@@ -53,7 +53,7 @@ class DatabaseConnector(private val dbFile: String) {
         activityRepo.insert(activities.toTypedArray())
     }
 
-    fun getAllActivities(): List<Activity> = activityRepo.find().toList()
+    fun getAllActivities(): List<Activity> = activityRepo.find().sortedByDescending { it.startDate }.toList()
 
     fun getActivity(id: String) = activityRepo.find(Activity::id eq id).firstOrNull()
 
